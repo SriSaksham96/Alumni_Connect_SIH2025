@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const News = require('../models/News');
 const User = require('../models/User');
-const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, requirePermission, optionalAuth } = require('../middleware/auth');
 const { uploadNewsImages, handleUploadError } = require('../middleware/upload');
 
 const router = express.Router();
@@ -177,13 +177,13 @@ router.get('/:id', optionalAuth, async (req, res) => {
 
 // @route   POST /api/news
 // @desc    Create new news article
-// @access  Private (Admin only)
+// @access  Private (Admin, Super Admin)
 router.post('/', [
   body('title').trim().isLength({ min: 1, max: 200 }).withMessage('Article title is required'),
   body('content').trim().isLength({ min: 1, max: 10000 }).withMessage('Article content is required'),
   body('category').optional().isIn(['general', 'alumni', 'events', 'achievements', 'fundraising', 'academic', 'sports', 'other']),
   body('excerpt').optional().trim().isLength({ max: 500 })
-], authenticateToken, requireAdmin, uploadNewsImages, handleUploadError, async (req, res) => {
+], authenticateToken, requirePermission('create_news'), uploadNewsImages, handleUploadError, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

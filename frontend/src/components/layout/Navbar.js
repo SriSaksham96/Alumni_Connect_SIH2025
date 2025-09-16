@@ -20,7 +20,16 @@ import {
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { 
+    user, 
+    isAuthenticated, 
+    logout, 
+    canAccessAdminPanel,
+    hasPermission,
+    isAdmin,
+    isAlumni,
+    isStudent
+  } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -45,9 +54,31 @@ const Navbar = () => {
     { name: 'Messages', href: '/messages', icon: HiChat },
   ];
 
-  if (user?.role === 'admin') {
-    userNavigation.push({ name: 'Admin', href: '/admin', icon: HiViewGrid });
+  // Add role-based navigation items
+  if (canAccessAdminPanel()) {
+    userNavigation.push({ name: 'Admin Panel', href: '/admin', icon: HiViewGrid });
   }
+
+  // Add role badge
+  const getRoleBadge = () => {
+    if (!user) return null;
+    
+    const roleConfig = {
+      student: { color: 'bg-blue-100 text-blue-800', label: 'Student' },
+      alumni: { color: 'bg-green-100 text-green-800', label: 'Alumni' },
+      admin: { color: 'bg-purple-100 text-purple-800', label: 'Admin' },
+      super_admin: { color: 'bg-red-100 text-red-800', label: 'Super Admin' }
+    };
+    
+    const config = roleConfig[user.role];
+    if (!config) return null;
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
+        {config.label}
+      </span>
+    );
+  };
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -106,7 +137,12 @@ const Navbar = () => {
                     )}
                   </div>
                   <span className="ml-2 text-gray-700 font-medium">
-                    {user?.firstName} {user?.lastName}
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-medium text-gray-700">
+                        {user?.firstName} {user?.lastName}
+                      </span>
+                      {getRoleBadge()}
+                    </div>
                   </span>
                 </button>
 

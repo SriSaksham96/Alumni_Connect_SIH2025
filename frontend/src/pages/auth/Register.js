@@ -225,6 +225,75 @@ const Register = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
               )}
             </div>
+
+            {/* Role Selection */}
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                I am a
+              </label>
+              <select
+                {...register('role', { required: 'Please select your role' })}
+                className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${errors.role ? 'border-red-300' : ''}`}
+              >
+                <option value="">Select your role</option>
+                <option value="student">Current Student</option>
+                <option value="alumni">Alumni</option>
+              </select>
+              {errors.role && (
+                <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
+              )}
+            </div>
+
+            {/* Academic Information */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="graduationYear" className="block text-sm font-medium text-gray-700">
+                  Graduation Year
+                </label>
+                <input
+                  {...register('graduationYear', {
+                    min: {
+                      value: 1950,
+                      message: 'Graduation year must be after 1950'
+                    },
+                    max: {
+                      value: new Date().getFullYear() + 10,
+                      message: 'Invalid graduation year'
+                    }
+                  })}
+                  type="number"
+                  className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${errors.graduationYear ? 'border-red-300' : ''}`}
+                  placeholder="e.g., 2024"
+                />
+                {errors.graduationYear && (
+                  <p className="mt-1 text-sm text-red-600">{errors.graduationYear.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="degree" className="block text-sm font-medium text-gray-700">
+                  Degree
+                </label>
+                <input
+                  {...register('degree')}
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  placeholder="e.g., B.Tech, MBA"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="major" className="block text-sm font-medium text-gray-700">
+                Major/Field of Study
+              </label>
+              <input
+                {...register('major')}
+                type="text"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                placeholder="e.g., Computer Science, Business Administration"
+              />
+            </div>
           </div>
 
           <div className="flex items-center">

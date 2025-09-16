@@ -58,6 +58,11 @@ export const usersAPI = {
   uploadDocument: (id, formData) => api.post(`/users/${id}/upload-document`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
+  // Admin dashboard methods
+  getDashboardStats: () => api.get('/users/dashboard/stats'),
+  getDashboardActivity: () => api.get('/users/dashboard/activity'),
+  updateUserStatus: (id, statusData) => api.put(`/users/${id}/status`, statusData),
+  changeUserRole: (id, roleData) => api.put(`/auth/change-role/${id}`, roleData),
 };
 
 // Messages API

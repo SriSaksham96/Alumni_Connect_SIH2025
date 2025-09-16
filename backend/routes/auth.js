@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const passport = require('passport');
 const User = require('../models/User');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, requireSuperAdmin } = require('../middleware/auth');
 const { uploadProfilePicture, handleUploadError } = require('../middleware/upload');
 
 const router = express.Router();
@@ -22,7 +22,10 @@ router.post('/register', [
   body('lastName').trim().isLength({ min: 1, max: 50 }).withMessage('Last name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('role').optional().isIn(['alumni', 'admin']).withMessage('Invalid role')
+  body('role').optional().isIn(['student', 'alumni']).withMessage('Invalid role'),
+  body('graduationYear').optional().isInt({ min: 1950, max: new Date().getFullYear() + 10 }).withMessage('Invalid graduation year'),
+  body('degree').optional().trim().isLength({ max: 100 }).withMessage('Degree must be less than 100 characters'),
+  body('major').optional().trim().isLength({ max: 100 }).withMessage('Major must be less than 100 characters')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -30,12 +33,27 @@ router.post('/register', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { firstName, lastName, email, password, role = 'alumni' } = req.body;
+    const { 
+      firstName, 
+      lastName, 
+      email, 
+      password, 
+      role = 'student',
+      graduationYear,
+      degree,
+      major
+    } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists with this email' });
+    }
+
+    // Determine role based on graduation year
+    let userRole = role;
+    if (graduationYear && graduationYear <= new Date().getFullYear()) {
+      userRole = 'alumni';
     }
 
     // Create new user
@@ -44,7 +62,13 @@ router.post('/register', [
       lastName,
       email,
       password,
-      role
+      role: userRole,
+      status: 'pending_verification',
+      profile: {
+        graduationYear,
+        degree,
+        major
+      }
     });
 
     await user.save();
@@ -330,6 +354,157 @@ router.post('/reset-password', [
 // @access  Private
 router.post('/logout', authenticateToken, (req, res) => {
   res.json({ message: 'Logout successful' });
+});
+
+// @route   GET /api/auth/roles
+// @desc    Get available roles and permissions
+// @access  Private (Admin only)
+router.get('/roles', authenticateToken, requireAdmin, (req, res) => {
+  const roles = {
+    student: {
+      name: 'Student',
+      description: 'Current students with basic access',
+      permissions: [
+        'read_profile',
+        'edit_profile',
+        'view_alumni',
+        'send_messages'
+      ]
+    },
+    alumni: {
+      name: 'Alumni',
+      description: 'Graduated students with extended access',
+      permissions: [
+        'read_profile',
+        'edit_profile',
+        'view_alumni',
+        'send_messages',
+        'create_events'
+      ]
+    },
+    admin: {
+      name: 'Admin',
+      description: 'Administrative users with management access',
+      permissions: [
+        'read_profile',
+        'edit_profile',
+        'view_alumni',
+        'send_messages',
+        'create_events',
+        'edit_events',
+        'delete_events',
+        'create_news',
+        'edit_news',
+        'delete_news',
+        'manage_users',
+        'view_analytics',
+        'manage_donations',
+        'moderate_content',
+        'access_admin_panel'
+      ]
+    },
+    super_admin: {
+      name: 'Super Admin',
+      description: 'Full system access including role management',
+      permissions: [
+        'read_profile',
+        'edit_profile',
+        'view_alumni',
+        'send_messages',
+        'create_events',
+        'edit_events',
+        'delete_events',
+        'create_news',
+        'edit_news',
+        'delete_news',
+        'manage_users',
+        'manage_roles',
+        'view_analytics',
+        'manage_donations',
+        'moderate_content',
+        'access_admin_panel'
+      ]
+    }
+  };
+
+  res.json({ roles });
+});
+
+// @route   PUT /api/auth/verify-account
+// @desc    Verify user account (Admin only)
+// @access  Private (Admin only)
+router.put('/verify-account/:userId', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { status } = req.body;
+
+    if (!['active', 'inactive', 'suspended'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.status = status;
+    if (status === 'active' && !user.verifiedAt) {
+      user.verifiedAt = new Date();
+    }
+
+    await user.save();
+
+    res.json({ 
+      message: 'Account status updated successfully',
+      user: {
+        id: user._id,
+        status: user.status,
+        verifiedAt: user.verifiedAt
+      }
+    });
+  } catch (error) {
+    console.error('Verify account error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   PUT /api/auth/change-role
+// @desc    Change user role (Super Admin only)
+// @access  Private (Super Admin only)
+router.put('/change-role/:userId', authenticateToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+
+    if (!['student', 'alumni', 'admin', 'super_admin'].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent changing own role
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Cannot change your own role' });
+    }
+
+    user.role = role;
+    await user.save();
+
+    res.json({ 
+      message: 'User role updated successfully',
+      user: {
+        id: user._id,
+        role: user.role,
+        permissions: user.permissions
+      }
+    });
+  } catch (error) {
+    console.error('Change role error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 module.exports = router;

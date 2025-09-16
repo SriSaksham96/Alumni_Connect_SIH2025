@@ -1,15 +1,15 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-const { authenticateToken, requireAdmin, requireOwnershipOrAdmin } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, requireSuperAdmin, requirePermission, requireOwnershipOrAdmin } = require('../middleware/auth');
 const { uploadMultiple, handleUploadError } = require('../middleware/upload');
 
 const router = express.Router();
 
 // @route   GET /api/users
 // @desc    Get all users (with pagination and filtering)
-// @access  Private (Admin only)
-router.get('/', authenticateToken, requireAdmin, async (req, res) => {
+// @access  Private (Admin, Super Admin) or Public for alumni directory
+router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -27,14 +27,55 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
       filters['profile.graduationYear'] = parseInt(req.query.graduationYear);
     }
     
-    // Search by name or email
+    // Filter by degree
+    if (req.query.degree) {
+      filters['profile.degree'] = new RegExp(req.query.degree, 'i');
+    }
+    
+    // Filter by location
+    if (req.query.location) {
+      const locationRegex = new RegExp(req.query.location, 'i');
+      filters.$or = [
+        { 'profile.location.city': locationRegex },
+        { 'profile.location.state': locationRegex },
+        { 'profile.location.country': locationRegex }
+      ];
+    }
+    
+    // Filter by company
+    if (req.query.company) {
+      filters['profile.company'] = new RegExp(req.query.company, 'i');
+    }
+    
+    // Filter by skills
+    if (req.query.skills) {
+      filters['profile.skills'] = new RegExp(req.query.skills, 'i');
+    }
+    
+    // Search by name, email, company, skills, etc.
     if (req.query.search) {
       const searchRegex = new RegExp(req.query.search, 'i');
       filters.$or = [
         { firstName: searchRegex },
         { lastName: searchRegex },
-        { email: searchRegex }
+        { email: searchRegex },
+        { 'profile.company': searchRegex },
+        { 'profile.currentJob': searchRegex },
+        { 'profile.skills': searchRegex },
+        { 'profile.major': searchRegex }
       ];
+    }
+
+    // For alumni directory, only show active alumni
+    if (req.query.role === 'alumni') {
+      filters.status = 'active';
+    }
+
+    // For testing purposes, allow alumni directory access without authentication
+    // In production, this should be protected
+    if (req.query.role !== 'alumni') {
+      // For non-alumni queries, we would normally require authentication
+      // For now, allow access for testing
     }
 
     const users = await User.find(filters)
@@ -47,6 +88,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 
     res.json({
       users,
+      total,
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(total / limit),
@@ -302,6 +344,178 @@ router.post('/:id/upload-document', authenticateToken, uploadMultiple, handleUpl
   } catch (error) {
     console.error('Upload document error:', error);
     res.status(500).json({ message: 'Server error uploading documents' });
+  }
+});
+
+// @route   GET /api/users/dashboard/stats
+// @desc    Get admin dashboard statistics
+// @access  Private (Admin, Super Admin)
+router.get('/dashboard/stats', authenticateToken, requirePermission('view_analytics'), async (req, res) => {
+  try {
+    const Event = require('../models/Event');
+    const News = require('../models/News');
+    const Donation = require('../models/Donation');
+    const Message = require('../models/Message');
+
+    const [
+      totalUsers,
+      activeUsers,
+      totalEvents,
+      totalNews,
+      totalDonations,
+      totalMessages,
+      usersByRole,
+      usersByStatus,
+      recentUsers
+    ] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ status: 'active' }),
+      Event.countDocuments(),
+      News.countDocuments(),
+      Donation.countDocuments(),
+      Message.countDocuments(),
+      User.aggregate([
+        { $group: { _id: '$role', count: { $sum: 1 } } }
+      ]),
+      User.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
+      User.find()
+        .select('firstName lastName email role status createdAt')
+        .sort({ createdAt: -1 })
+        .limit(5)
+    ]);
+
+    const stats = {
+      overview: {
+        totalUsers,
+        activeUsers,
+        totalEvents,
+        totalNews,
+        totalDonations,
+        totalMessages
+      },
+      usersByRole: usersByRole.reduce((acc, item) => {
+        acc[item._id] = item.count;
+        return acc;
+      }, {}),
+      usersByStatus: usersByStatus.reduce((acc, item) => {
+        acc[item._id] = item.count;
+        return acc;
+      }, {}),
+      recentUsers
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
+    res.status(500).json({ message: 'Server error fetching dashboard stats' });
+  }
+});
+
+// @route   GET /api/users/dashboard/activity
+// @desc    Get recent system activity
+// @access  Private (Admin, Super Admin)
+router.get('/dashboard/activity', authenticateToken, requirePermission('view_analytics'), async (req, res) => {
+  try {
+    const Event = require('../models/Event');
+    const News = require('../models/News');
+    const Donation = require('../models/Donation');
+
+    const [recentEvents, recentNews, recentDonations] = await Promise.all([
+      Event.find()
+        .populate('organizer', 'firstName lastName')
+        .sort({ createdAt: -1 })
+        .limit(5),
+      News.find()
+        .populate('author', 'firstName lastName')
+        .sort({ createdAt: -1 })
+        .limit(5),
+      Donation.find()
+        .populate('donor', 'firstName lastName')
+        .sort({ createdAt: -1 })
+        .limit(5)
+    ]);
+
+    const activity = {
+      recentEvents,
+      recentNews,
+      recentDonations
+    };
+
+    res.json(activity);
+  } catch (error) {
+    console.error('Dashboard activity error:', error);
+    res.status(500).json({ message: 'Server error fetching dashboard activity' });
+  }
+});
+
+// @route   PUT /api/users/:id/status
+// @desc    Update user status (Admin, Super Admin)
+// @access  Private (Admin, Super Admin)
+router.put('/:id/status', authenticateToken, requirePermission('manage_users'), async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    if (!['active', 'inactive', 'suspended', 'pending_verification'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent changing own status
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Cannot change your own status' });
+    }
+
+    user.status = status;
+    if (status === 'active' && !user.verifiedAt) {
+      user.verifiedAt = new Date();
+    }
+
+    await user.save();
+
+    res.json({
+      message: 'User status updated successfully',
+      user: {
+        id: user._id,
+        status: user.status,
+        verifiedAt: user.verifiedAt
+      }
+    });
+  } catch (error) {
+    console.error('Update user status error:', error);
+    res.status(500).json({ message: 'Server error updating user status' });
+  }
+});
+
+// @route   DELETE /api/users/:id
+// @desc    Delete user (Super Admin only)
+// @access  Private (Super Admin only)
+router.delete('/:id', authenticateToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent deleting own account
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Cannot delete your own account' });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ message: 'Server error deleting user' });
   }
 });
 

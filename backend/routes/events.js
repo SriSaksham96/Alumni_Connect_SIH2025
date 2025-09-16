@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Event = require('../models/Event');
 const User = require('../models/User');
-const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, requirePermission, requireRole, optionalAuth } = require('../middleware/auth');
 const { uploadEventImages, handleUploadError } = require('../middleware/upload');
 
 const router = express.Router();
@@ -122,14 +122,14 @@ router.get('/:id', optionalAuth, async (req, res) => {
 
 // @route   POST /api/events
 // @desc    Create new event
-// @access  Private (Admin only)
+// @access  Private (Alumni, Admin, Super Admin)
 router.post('/', [
   body('title').trim().isLength({ min: 1, max: 200 }).withMessage('Event title is required'),
   body('description').trim().isLength({ min: 1, max: 2000 }).withMessage('Event description is required'),
   body('date').isISO8601().withMessage('Valid event date is required'),
   body('location.venue').trim().isLength({ min: 1, max: 200 }).withMessage('Venue is required'),
   body('capacity').optional().isInt({ min: 1 }).withMessage('Capacity must be a positive integer')
-], authenticateToken, requireAdmin, uploadEventImages, handleUploadError, async (req, res) => {
+], authenticateToken, requirePermission('create_events'), uploadEventImages, handleUploadError, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -171,7 +171,7 @@ router.put('/:id', [
   body('description').optional().trim().isLength({ min: 1, max: 2000 }),
   body('date').optional().isISO8601(),
   body('capacity').optional().isInt({ min: 1 })
-], authenticateToken, requireAdmin, uploadEventImages, handleUploadError, async (req, res) => {
+], authenticateToken, requirePermission('edit_events'), uploadEventImages, handleUploadError, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -215,8 +215,8 @@ router.put('/:id', [
 
 // @route   DELETE /api/events/:id
 // @desc    Delete event
-// @access  Private (Admin only)
-router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
+// @access  Private (Admin, Super Admin)
+router.delete('/:id', authenticateToken, requirePermission('delete_events'), async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) {

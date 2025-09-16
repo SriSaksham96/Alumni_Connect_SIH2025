@@ -10,6 +10,8 @@ const initialState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  permissions: [],
+  role: null,
 };
 
 const authReducer = (state, action) => {
@@ -28,6 +30,8 @@ const authReducer = (state, action) => {
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        permissions: action.payload.user?.permissions || [],
+        role: action.payload.user?.role || null,
       };
     case 'AUTH_FAILURE':
       return {
@@ -37,6 +41,8 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
         isLoading: false,
         error: action.payload,
+        permissions: [],
+        role: null,
       };
     case 'LOGOUT':
       return {
@@ -46,6 +52,8 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
         isLoading: false,
         error: null,
+        permissions: [],
+        role: null,
       };
     case 'UPDATE_USER':
       return {
@@ -188,6 +196,47 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
+  // Role-based helper functions
+  const hasPermission = (permission) => {
+    return state.permissions.includes(permission);
+  };
+
+  const hasRole = (role) => {
+    return state.role === role;
+  };
+
+  const hasAnyRole = (roles) => {
+    return roles.includes(state.role);
+  };
+
+  const isAdmin = () => {
+    return hasAnyRole(['admin', 'super_admin']);
+  };
+
+  const isSuperAdmin = () => {
+    return hasRole('super_admin');
+  };
+
+  const isAlumni = () => {
+    return hasAnyRole(['alumni', 'admin', 'super_admin']);
+  };
+
+  const isStudent = () => {
+    return hasRole('student');
+  };
+
+  const canAccessAdminPanel = () => {
+    return hasPermission('access_admin_panel') && state.user?.status === 'active';
+  };
+
+  const canManageUsers = () => {
+    return hasPermission('manage_users');
+  };
+
+  const canModerateContent = () => {
+    return hasPermission('moderate_content');
+  };
+
   const value = {
     ...state,
     login,
@@ -196,6 +245,17 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     changePassword,
     clearError,
+    // Role-based helpers
+    hasPermission,
+    hasRole,
+    hasAnyRole,
+    isAdmin,
+    isSuperAdmin,
+    isAlumni,
+    isStudent,
+    canAccessAdminPanel,
+    canManageUsers,
+    canModerateContent,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
