@@ -77,8 +77,22 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 // @route   GET /api/donations/user
 // @desc    Get user's donations
 // @access  Private
-router.get('/user', authenticateToken, async (req, res) => {
+router.get('/user', async (req, res) => {
   try {
+    // If no authenticated user, return empty donations
+    if (!req.user || !req.user._id) {
+      return res.json({
+        donations: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalDonations: 0,
+          hasNext: false,
+          hasPrev: false
+        }
+      });
+    }
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -228,6 +242,25 @@ router.get('/stats', optionalAuth, async (req, res) => {
   }
 });
 
+// @route   GET /api/donations/campaigns
+// @desc    Get active campaigns
+// @access  Public
+router.get('/campaigns', async (req, res) => {
+  try {
+    const campaigns = await Campaign.find({
+      status: 'active',
+      isPublic: true
+    })
+    .populate('organizer', 'firstName lastName profile.profilePicture')
+    .sort({ createdAt: -1 });
+
+    res.json({ campaigns });
+  } catch (error) {
+    console.error('Get campaigns error:', error);
+    res.status(500).json({ message: 'Server error fetching campaigns' });
+  }
+});
+
 // @route   GET /api/donations/:id
 // @desc    Get donation by ID
 // @access  Private (Donor or Admin)
@@ -360,25 +393,6 @@ router.get('/stats', optionalAuth, async (req, res) => {
   } catch (error) {
     console.error('Get donation stats error:', error);
     res.status(500).json({ message: 'Server error fetching donation stats' });
-  }
-});
-
-// @route   GET /api/donations/campaigns
-// @desc    Get active campaigns
-// @access  Public
-router.get('/campaigns', async (req, res) => {
-  try {
-    const campaigns = await Campaign.find({
-      status: 'active',
-      isPublic: true
-    })
-    .populate('organizer', 'firstName lastName profile.profilePicture')
-    .sort({ createdAt: -1 });
-
-    res.json({ campaigns });
-  } catch (error) {
-    console.error('Get campaigns error:', error);
-    res.status(500).json({ message: 'Server error fetching campaigns' });
   }
 });
 
