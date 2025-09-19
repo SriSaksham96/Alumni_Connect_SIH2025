@@ -19,10 +19,13 @@ import Profile from './pages/Profile';
 import AlumniDirectory from './pages/AlumniDirectory';
 import Events from './pages/Events';
 import EventDetails from './pages/EventDetails';
+import CreateEvent from './pages/CreateEvent';
 import News from './pages/News';
 import NewsDetails from './pages/NewsDetails';
+import CreateNews from './pages/CreateNews';
 import Messages from './pages/Messages';
 import Donations from './pages/Donations';
+import CreateCampaign from './pages/CreateCampaign';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import NotFound from './pages/NotFound';
 
@@ -70,6 +73,30 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Messages />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreateEvent />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/news/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreateNews />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/donations/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreateCampaign />
                     </ProtectedRoute>
                   }
                 />

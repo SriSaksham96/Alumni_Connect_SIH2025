@@ -37,7 +37,8 @@ const Register = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/google`;
+    const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
+    window.location.href = `${baseUrl}/api/auth/google`;
   };
 
   return (

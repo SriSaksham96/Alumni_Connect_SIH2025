@@ -85,6 +85,7 @@ router.post('/register', [
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        permissions: user.permissions,
         profile: user.profile
       }
     });
@@ -116,7 +117,7 @@ router.post('/login', [
     }
 
     // Check if account is active
-    if (!user.isActive) {
+    if (!user.isUserActive()) {
       return res.status(400).json({ message: 'Account is deactivated' });
     }
 
@@ -142,6 +143,7 @@ router.post('/login', [
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        permissions: user.permissions,
         profile: user.profile
       }
     });

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
-import { HiHeart, HiCurrencyDollar, HiTrendingUp, HiUsers, HiGift, HiSearch, HiFilter, HiX, HiCalendar, HiTag } from 'react-icons/hi';
+import { Link } from 'react-router-dom';
+import { HiHeart, HiCurrencyDollar, HiTrendingUp, HiUsers, HiGift, HiSearch, HiFilter, HiX, HiCalendar, HiTag, HiPlus } from 'react-icons/hi';
 import { donationsAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const Donations = () => {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const [filters, setFilters] = useState({
     search: '',
     category: '',
@@ -28,6 +29,12 @@ const Donations = () => {
     {
       keepPreviousData: true,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      onSuccess: (data) => {
+        console.log('Campaigns API Success:', data);
+      },
+      onError: (error) => {
+        console.error('Campaigns API Error:', error);
+      }
     }
   );
 
@@ -136,8 +143,21 @@ const Donations = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Donations & Fundraising</h1>
-          <p className="mt-2 text-gray-600">Support your university and make a lasting impact</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Donations & Fundraising</h1>
+              <p className="mt-2 text-gray-600">Support your university and make a lasting impact</p>
+            </div>
+            {user && hasPermission('create_campaigns') && (
+              <Link
+                to="/donations/create"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <HiPlus className="w-4 h-4" />
+                Create Campaign
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -284,9 +304,9 @@ const Donations = () => {
         </div>
 
         {/* Campaigns Grid */}
-        {data?.campaigns?.length > 0 ? (
+        {data?.data?.campaigns?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {data.campaigns.map((campaign) => (
+            {data.data.campaigns.map((campaign) => (
               <div key={campaign._id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                 {campaign.image && (
                   <div className="h-48 bg-gray-200">

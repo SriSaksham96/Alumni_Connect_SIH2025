@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
-import { HiNewspaper, HiSearch, HiFilter, HiX, HiHeart, HiChat, HiEye, HiCalendar, HiTag } from 'react-icons/hi';
+import { HiNewspaper, HiSearch, HiFilter, HiX, HiHeart, HiChat, HiEye, HiCalendar, HiTag, HiPlus } from 'react-icons/hi';
 import { newsAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const News = () => {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const [filters, setFilters] = useState({
     search: '',
     category: '',
@@ -26,6 +26,12 @@ const News = () => {
     {
       keepPreviousData: true,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      onSuccess: (data) => {
+        console.log('News API Success:', data);
+      },
+      onError: (error) => {
+        console.error('News API Error:', error);
+      }
     }
   );
 
@@ -91,8 +97,21 @@ const News = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">News & Updates</h1>
-          <p className="mt-2 text-gray-600">Stay connected with the latest alumni news and updates</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">News & Updates</h1>
+              <p className="mt-2 text-gray-600">Stay connected with the latest alumni news and updates</p>
+            </div>
+            {user && hasPermission('create_news') && (
+              <Link
+                to="/news/create"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <HiPlus className="w-4 h-4" />
+                Create Article
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -200,9 +219,9 @@ const News = () => {
         </div>
 
         {/* News Articles */}
-        {data?.news?.length > 0 ? (
+        {data?.data?.news?.length > 0 ? (
           <div className="space-y-6 mb-8">
-            {data.news.map((article) => (
+            {data.data.news.map((article) => (
               <div key={article._id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">

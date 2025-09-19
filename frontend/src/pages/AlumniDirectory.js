@@ -50,8 +50,8 @@ const AlumniDirectory = () => {
         ...(filters.skills && { skills: filters.skills }),
       });
 
-      // Make direct API call without authentication for testing
-      const response = await fetch(`http://localhost:5001/api/users?${params.toString()}`);
+      // Make API call to alumni directory endpoint
+      const response = await fetch(`http://localhost:5001/api/users/alumni/directory?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch alumni');
       }
@@ -60,6 +60,12 @@ const AlumniDirectory = () => {
     {
       keepPreviousData: true,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      onSuccess: (data) => {
+        console.log('Alumni API Success:', data);
+      },
+      onError: (error) => {
+        console.error('Alumni API Error:', error);
+      }
     }
   );
 

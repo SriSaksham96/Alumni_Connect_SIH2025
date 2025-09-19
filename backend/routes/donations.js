@@ -3,7 +3,7 @@ const { body, validationResult } = require('express-validator');
 const Donation = require('../models/Donation');
 const Campaign = require('../models/Campaign');
 const User = require('../models/User');
-const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, requirePermission, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -239,6 +239,42 @@ router.get('/stats', optionalAuth, async (req, res) => {
   } catch (error) {
     console.error('Get donation stats error:', error);
     res.status(500).json({ message: 'Server error fetching donation stats' });
+  }
+});
+
+// @route   POST /api/donations/campaigns
+// @desc    Create new campaign
+// @access  Private (Alumni, Admin, Super Admin)
+router.post('/campaigns', [
+  body('title').trim().isLength({ min: 1, max: 200 }).withMessage('Campaign title is required'),
+  body('description').trim().isLength({ min: 1, max: 2000 }).withMessage('Campaign description is required'),
+  body('targetAmount').isFloat({ min: 1 }).withMessage('Valid target amount is required'),
+  body('startDate').isISO8601().withMessage('Valid start date is required'),
+  body('endDate').isISO8601().withMessage('Valid end date is required'),
+  body('category').optional().isIn(['scholarship', 'facilities', 'research', 'emergency', 'events', 'general', 'other'])
+], authenticateToken, requirePermission('create_campaigns'), async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const campaignData = req.body;
+    campaignData.organizer = req.user._id;
+    campaignData.status = 'active'; // Set campaigns to active by default
+
+    const campaign = new Campaign(campaignData);
+    await campaign.save();
+
+    await campaign.populate('organizer', 'firstName lastName profile.profilePicture');
+
+    res.status(201).json({
+      message: 'Campaign created successfully',
+      campaign
+    });
+  } catch (error) {
+    console.error('Create campaign error:', error);
+    res.status(500).json({ message: 'Server error creating campaign' });
   }
 });
 

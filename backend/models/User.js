@@ -51,6 +51,7 @@ const userSchema = new mongoose.Schema({
       'create_news',
       'edit_news',
       'delete_news',
+      'create_campaigns',
       'manage_users',
       'manage_roles',
       'view_analytics',
@@ -222,7 +223,7 @@ userSchema.methods.hasAnyRole = function(roles) {
 };
 
 userSchema.methods.isUserActive = function() {
-  return this.status === 'active';
+  return ['active', 'pending_verification'].includes(this.status);
 };
 
 userSchema.methods.isVerified = function() {
@@ -262,7 +263,9 @@ userSchema.methods.getDefaultPermissions = function() {
       'edit_profile',
       'view_alumni',
       'send_messages',
-      'create_events'
+      'create_events',
+      'create_news',
+      'create_campaigns'
     ],
     admin: [
       'read_profile',
@@ -275,6 +278,7 @@ userSchema.methods.getDefaultPermissions = function() {
       'create_news',
       'edit_news',
       'delete_news',
+      'create_campaigns',
       'manage_users',
       'view_analytics',
       'manage_donations',
@@ -292,6 +296,7 @@ userSchema.methods.getDefaultPermissions = function() {
       'create_news',
       'edit_news',
       'delete_news',
+      'create_campaigns',
       'manage_users',
       'manage_roles',
       'view_analytics',

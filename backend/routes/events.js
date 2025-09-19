@@ -138,6 +138,7 @@ router.post('/', [
 
     const eventData = req.body;
     eventData.organizer = req.user._id;
+    eventData.status = 'published'; // Set events to published by default
 
     // Handle image uploads
     if (req.files && req.files.eventImages) {

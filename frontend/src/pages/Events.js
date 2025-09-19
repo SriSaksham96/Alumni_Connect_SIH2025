@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
-import { HiCalendar, HiLocationMarker, HiUsers, HiClock, HiSearch, HiFilter, HiX } from 'react-icons/hi';
+import { HiCalendar, HiLocationMarker, HiUsers, HiClock, HiSearch, HiFilter, HiX, HiPlus } from 'react-icons/hi';
 import { eventsAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const Events = () => {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const [filters, setFilters] = useState({
     search: '',
     eventType: '',
@@ -26,6 +26,12 @@ const Events = () => {
     {
       keepPreviousData: true,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      onSuccess: (data) => {
+        console.log('Events API Success:', data);
+      },
+      onError: (error) => {
+        console.error('Events API Error:', error);
+      }
     }
   );
 
@@ -93,13 +99,29 @@ const Events = () => {
 
   if (isLoading) return <LoadingSpinner />;
 
+  console.log('Events render - data:', data, 'isLoading:', isLoading, 'error:', error);
+  console.log('Events data structure:', data?.data);
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Events</h1>
-          <p className="mt-2 text-gray-600">Discover and register for upcoming alumni events</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Events</h1>
+              <p className="mt-2 text-gray-600">Discover and register for upcoming alumni events</p>
+            </div>
+            {user && hasPermission('create_events') && (
+              <Link
+                to="/events/create"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <HiPlus className="w-4 h-4" />
+                Create Event
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -205,9 +227,9 @@ const Events = () => {
         </div>
 
         {/* Events Grid */}
-        {data?.events?.length > 0 ? (
+        {data?.data?.events?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {data.events.map((event) => (
+            {data.data.events.map((event) => (
               <div key={event._id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                 {event.images && event.images.length > 0 && (
                   <div className="h-48 bg-gray-200">
@@ -300,29 +322,32 @@ const Events = () => {
                   : 'Check back later for upcoming events.'
                 }
               </p>
+              <div className="mt-4 text-sm text-gray-500">
+                Debug: data={JSON.stringify(data)}, events length={data?.data?.events?.length}
+              </div>
             </div>
           </div>
         )}
 
         {/* Pagination */}
-        {data?.pagination && data.pagination.totalPages > 1 && (
+        {data?.data?.pagination && data.data.pagination.totalPages > 1 && (
           <div className="flex justify-center">
             <nav className="flex items-center space-x-2">
               <button
                 onClick={() => setPage(page - 1)}
-                disabled={!data.pagination.hasPrev}
+                disabled={!data.data.pagination.hasPrev}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
               
               <span className="px-3 py-2 text-sm text-gray-700">
-                Page {data.pagination.currentPage} of {data.pagination.totalPages}
+                Page {data.data.pagination.currentPage} of {data.data.pagination.totalPages}
               </span>
               
               <button
                 onClick={() => setPage(page + 1)}
-                disabled={!data.pagination.hasNext}
+                disabled={!data.data.pagination.hasNext}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next

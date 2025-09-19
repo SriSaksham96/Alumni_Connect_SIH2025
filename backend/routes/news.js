@@ -177,7 +177,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
 
 // @route   POST /api/news
 // @desc    Create new news article
-// @access  Private (Admin, Super Admin)
+// @access  Private (Alumni, Admin, Super Admin)
 router.post('/', [
   body('title').trim().isLength({ min: 1, max: 200 }).withMessage('Article title is required'),
   body('content').trim().isLength({ min: 1, max: 10000 }).withMessage('Article content is required'),
@@ -192,6 +192,7 @@ router.post('/', [
 
     const articleData = req.body;
     articleData.author = req.user._id;
+    articleData.status = 'published'; // Set news articles to published by default
 
     // Handle image uploads
     if (req.files && req.files.newsImages) {

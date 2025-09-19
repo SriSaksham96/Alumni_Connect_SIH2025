@@ -80,9 +80,7 @@ export const messagesAPI = {
 export const eventsAPI = {
   getEvents: (params) => api.get('/events', { params }),
   getEvent: (id) => api.get(`/events/${id}`),
-  createEvent: (eventData) => api.post('/events', eventData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  createEvent: (eventData) => api.post('/events', eventData),
   updateEvent: (id, eventData) => api.put(`/events/${id}`, eventData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
@@ -96,9 +94,7 @@ export const eventsAPI = {
 export const newsAPI = {
   getNews: (params) => api.get('/news', { params }),
   getNewsArticle: (id) => api.get(`/news/${id}`),
-  createNews: (articleData) => api.post('/news', articleData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  createNews: (articleData) => api.post('/news', articleData),
   updateNews: (id, articleData) => api.put(`/news/${id}`, articleData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
@@ -118,6 +114,7 @@ export const donationsAPI = {
   updateDonationStatus: (id, status) => api.put(`/donations/${id}/status`, { paymentStatus: status }),
   getDonationStats: () => api.get('/donations/stats'),
   getCampaigns: () => api.get('/donations/campaigns'),
+  createCampaign: (campaignData) => api.post('/donations/campaigns', campaignData),
 };
 
 // Utility functions
