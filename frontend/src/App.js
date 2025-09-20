@@ -15,6 +15,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import AdminLogin from './pages/auth/AdminLogin';
 import Profile from './pages/Profile';
 import AlumniDirectory from './pages/AlumniDirectory';
 import Events from './pages/Events';
@@ -52,6 +53,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/alumni" element={<AlumniDirectory />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/events/:id" element={<EventDetails />} />

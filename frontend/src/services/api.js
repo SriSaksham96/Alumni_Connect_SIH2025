@@ -117,6 +117,27 @@ export const donationsAPI = {
   createCampaign: (campaignData) => api.post('/donations/campaigns', campaignData),
 };
 
+// Admin API
+export const adminAPI = {
+  // Events
+  getEvents: (params) => api.get('/admin/events', { params }),
+  updateEvent: (id, eventData) => api.put(`/admin/events/${id}`, eventData),
+  deleteEvent: (id) => api.delete(`/admin/events/${id}`),
+  
+  // News
+  getNews: (params) => api.get('/admin/news', { params }),
+  updateNews: (id, newsData) => api.put(`/admin/news/${id}`, newsData),
+  deleteNews: (id) => api.delete(`/admin/news/${id}`),
+  
+  // Campaigns
+  getCampaigns: (params) => api.get('/admin/campaigns', { params }),
+  updateCampaign: (id, campaignData) => api.put(`/admin/campaigns/${id}`, campaignData),
+  deleteCampaign: (id) => api.delete(`/admin/campaigns/${id}`),
+  
+  // Stats
+  getStats: () => api.get('/admin/stats'),
+};
+
 // Utility functions
 export const handleApiError = (error) => {
   if (error.response) {

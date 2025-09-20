@@ -332,6 +332,39 @@ const Donations = () => {
                     {campaign.description}
                   </p>
 
+                  {/* Organizer Information */}
+                  <div className="flex items-center mb-4 p-2 bg-gray-50 rounded-lg">
+                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                      {campaign.organizer?.profile?.profilePicture ? (
+                        <img
+                          className="h-8 w-8 rounded-full object-cover"
+                          src={campaign.organizer.profile.profilePicture}
+                          alt={campaign.organizer.firstName}
+                        />
+                      ) : (
+                        <span className="text-sm font-medium text-gray-600">
+                          {campaign.organizer?.firstName?.[0]}{campaign.organizer?.lastName?.[0]}
+                        </span>
+                      )}
+                    </div>
+                    <div className="ml-3">
+                      <div className="text-sm font-medium text-gray-900">
+                        {campaign.organizer?.firstName} {campaign.organizer?.lastName}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {campaign.organizer?.role === 'admin' || campaign.organizer?.role === 'super_admin' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                            Admin
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            Alumni
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm text-gray-500">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(campaign.category)}`}>

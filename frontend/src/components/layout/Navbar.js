@@ -186,6 +186,12 @@ const Navbar = () => {
                 >
                   Sign up
                 </Link>
+                <Link
+                  to="/admin/login"
+                  className="text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md text-sm font-medium border border-gray-300 hover:border-gray-400"
+                >
+                  Admin
+                </Link>
               </div>
             )}
           </div>

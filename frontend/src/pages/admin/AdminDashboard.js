@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { usersAPI } from '../../services/api';
+import { usersAPI, adminAPI } from '../../services/api';
 import { 
   HiUsers, 
   HiCalendar, 
@@ -15,6 +15,9 @@ import {
 } from 'react-icons/hi';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import RoleGuard from '../../components/common/RoleGuard';
+import AdminEventsManagement from '../../components/admin/AdminEventsManagement';
+import AdminNewsManagement from '../../components/admin/AdminNewsManagement';
+import AdminCampaignsManagement from '../../components/admin/AdminCampaignsManagement';
 
 const AdminDashboard = () => {
   const { user, hasPermission, isSuperAdmin } = useAuth();
@@ -32,12 +35,12 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       const [statsData, activityData, usersData] = await Promise.all([
-        usersAPI.getDashboardStats(),
+        adminAPI.getStats(),
         usersAPI.getDashboardActivity(),
         usersAPI.getUsers({ page: 1, limit: 10 })
       ]);
       
-      setStats(statsData);
+      setStats(statsData.data);
       setActivity(activityData);
       setUsers(usersData.users);
     } catch (error) {
@@ -383,38 +386,25 @@ const AdminDashboard = () => {
           </RoleGuard>
         )}
 
-        {/* Other tabs would be implemented similarly */}
+        {/* Events Management Tab */}
         {activeTab === 'events' && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Event Management
-              </h3>
-              <p className="mt-2 text-gray-600">Event management features coming soon...</p>
-            </div>
-          </div>
+          <RoleGuard requiredPermission="edit_events">
+            <AdminEventsManagement />
+          </RoleGuard>
         )}
 
+        {/* News Management Tab */}
         {activeTab === 'news' && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                News Management
-              </h3>
-              <p className="mt-2 text-gray-600">News management features coming soon...</p>
-            </div>
-          </div>
+          <RoleGuard requiredPermission="edit_news">
+            <AdminNewsManagement />
+          </RoleGuard>
         )}
 
+        {/* Campaigns Management Tab */}
         {activeTab === 'donations' && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Donation Management
-              </h3>
-              <p className="mt-2 text-gray-600">Donation management features coming soon...</p>
-            </div>
-          </div>
+          <RoleGuard requiredPermission="manage_donations">
+            <AdminCampaignsManagement />
+          </RoleGuard>
         )}
       </div>
     </div>

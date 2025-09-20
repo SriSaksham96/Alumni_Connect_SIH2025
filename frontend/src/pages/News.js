@@ -252,6 +252,39 @@ const News = () => {
                           {article.excerpt}
                         </p>
                       )}
+
+                      {/* Author Information */}
+                      <div className="flex items-center mb-4 p-2 bg-gray-50 rounded-lg">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                          {article.author?.profile?.profilePicture ? (
+                            <img
+                              className="h-8 w-8 rounded-full object-cover"
+                              src={article.author.profile.profilePicture}
+                              alt={article.author.firstName}
+                            />
+                          ) : (
+                            <span className="text-sm font-medium text-gray-600">
+                              {article.author?.firstName?.[0]}{article.author?.lastName?.[0]}
+                            </span>
+                          )}
+                        </div>
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-gray-900">
+                            {article.author?.firstName} {article.author?.lastName}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {article.author?.role === 'admin' || article.author?.role === 'super_admin' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                Admin
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                Alumni
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     
                     {article.images && article.images.length > 0 && (
