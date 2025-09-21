@@ -26,7 +26,7 @@ const Login = () => {
 
   useEffect(() => {
     return () => clearError();
-  }, [clearError]);
+  }, []);
 
   const onSubmit = async (data) => {
     const result = await login(data);

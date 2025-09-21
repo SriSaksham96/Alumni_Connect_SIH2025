@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     dispatch({ type: 'AUTH_START' });
     try {
       const response = await authAPI.login(credentials);
@@ -125,7 +125,7 @@ export const AuthProvider = ({ children }) => {
       toast.error(message);
       return { success: false, error: message };
     }
-  };
+  }, []);
 
   const register = async (userData) => {
     dispatch({ type: 'AUTH_START' });
@@ -192,9 +192,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
-  };
+  }, []);
 
   // Role-based helper functions
   const hasPermission = (permission) => {

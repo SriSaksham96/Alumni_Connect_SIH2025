@@ -437,7 +437,14 @@ router.get('/dashboard/activity', authenticateToken, requirePermission('view_ana
         .limit(5)
     ]);
 
+    // Get recent users for activity feed
+    const recentUsers = await User.find()
+      .select('firstName lastName email role status createdAt')
+      .sort({ createdAt: -1 })
+      .limit(5);
+
     const activity = {
+      recentUsers,
       recentEvents,
       recentNews,
       recentDonations

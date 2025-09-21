@@ -129,7 +129,16 @@ router.post('/', [
   body('date').isISO8601().withMessage('Valid event date is required'),
   body('location.venue').trim().isLength({ min: 1, max: 200 }).withMessage('Venue is required'),
   body('capacity').optional().isInt({ min: 1 }).withMessage('Capacity must be a positive integer')
-], authenticateToken, requirePermission('create_events'), uploadEventImages, handleUploadError, async (req, res) => {
+], authenticateToken, requirePermission('create_events'), (req, res, next) => {
+  // Handle both JSON and form data
+  if (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data')) {
+    return uploadEventImages(req, res, (err) => {
+      if (err) return handleUploadError(err, req, res, next);
+      next();
+    });
+  }
+  next();
+}, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
