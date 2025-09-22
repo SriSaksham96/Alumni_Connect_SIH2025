@@ -13,7 +13,8 @@ import {
   HiCamera,
   HiDocument,
   HiPlus,
-  HiTrash
+  HiTrash,
+  HiBookOpen
 } from 'react-icons/hi';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -51,7 +52,14 @@ const Profile = () => {
         state: user.profile?.location?.state || '',
         country: user.profile?.location?.country || '',
         skills: user.profile?.skills?.join(', ') || '',
-        interests: user.profile?.interests?.join(', ') || ''
+        interests: user.profile?.interests?.join(', ') || '',
+        // Mentorship fields
+        isAvailableAsMentor: user.profile?.mentorship?.isAvailableAsMentor || false,
+        mentorBio: user.profile?.mentorship?.mentorBio || '',
+        mentorExperience: user.profile?.mentorship?.mentorExperience || '2-5 years',
+        maxMentees: user.profile?.mentorship?.maxMentees || 3,
+        preferredMeetingFrequency: user.profile?.mentorship?.preferredMeetingFrequency || 'monthly',
+        preferredCommunicationMethod: user.profile?.mentorship?.preferredCommunicationMethod || 'mixed'
       });
       setDocuments(user.profile?.documents || []);
     }
@@ -116,7 +124,8 @@ const Profile = () => {
     { id: 'education', name: 'Education', icon: HiAcademicCap },
     { id: 'career', name: 'Career', icon: HiBriefcase },
     { id: 'contact', name: 'Contact', icon: HiMail },
-    { id: 'documents', name: 'Documents', icon: HiDocument }
+    { id: 'documents', name: 'Documents', icon: HiDocument },
+    { id: 'mentorship', name: 'Mentorship', icon: HiBookOpen }
   ];
 
   if (loading && !isSubmitting) {
@@ -514,6 +523,161 @@ const Profile = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'mentorship' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-gray-900">Mentorship Preferences</h3>
+                  {user?.role === 'alumni' && (
+                    <span className="text-sm text-gray-500">
+                      Available to mentor students
+                    </span>
+                  )}
+                </div>
+
+                {user?.role === 'alumni' ? (
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    {/* Available as Mentor */}
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isAvailableAsMentor"
+                        {...register('isAvailableAsMentor')}
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="isAvailableAsMentor" className="ml-2 block text-sm text-gray-900">
+                        I am available as a mentor
+                      </label>
+                    </div>
+
+                    {/* Mentor Bio */}
+                    <div>
+                      <label htmlFor="mentorBio" className="block text-sm font-medium text-gray-700">
+                        Mentor Bio
+                      </label>
+                      <textarea
+                        id="mentorBio"
+                        rows={4}
+                        {...register('mentorBio')}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        placeholder="Tell students about your experience and how you can help them..."
+                      />
+                    </div>
+
+                    {/* Experience Level */}
+                    <div>
+                      <label htmlFor="mentorExperience" className="block text-sm font-medium text-gray-700">
+                        Mentoring Experience
+                      </label>
+                      <select
+                        id="mentorExperience"
+                        {...register('mentorExperience')}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                      >
+                        <option value="0-2 years">0-2 years</option>
+                        <option value="2-5 years">2-5 years</option>
+                        <option value="5-10 years">5-10 years</option>
+                        <option value="10+ years">10+ years</option>
+                      </select>
+                    </div>
+
+                    {/* Max Mentees */}
+                    <div>
+                      <label htmlFor="maxMentees" className="block text-sm font-medium text-gray-700">
+                        Maximum Number of Mentees
+                      </label>
+                      <select
+                        id="maxMentees"
+                        {...register('maxMentees', { valueAsNumber: true })}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                      >
+                        <option value={1}>1</option>
+                        <option value={2}>2</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4</option>
+                        <option value={5}>5</option>
+                        <option value={6}>6</option>
+                        <option value={7}>7</option>
+                        <option value={8}>8</option>
+                        <option value={9}>9</option>
+                        <option value={10}>10</option>
+                      </select>
+                    </div>
+
+                    {/* Meeting Frequency */}
+                    <div>
+                      <label htmlFor="preferredMeetingFrequency" className="block text-sm font-medium text-gray-700">
+                        Preferred Meeting Frequency
+                      </label>
+                      <select
+                        id="preferredMeetingFrequency"
+                        {...register('preferredMeetingFrequency')}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                      >
+                        <option value="weekly">Weekly</option>
+                        <option value="bi-weekly">Bi-weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="as-needed">As needed</option>
+                      </select>
+                    </div>
+
+                    {/* Communication Method */}
+                    <div>
+                      <label htmlFor="preferredCommunicationMethod" className="block text-sm font-medium text-gray-700">
+                        Preferred Communication Method
+                      </label>
+                      <select
+                        id="preferredCommunicationMethod"
+                        {...register('preferredCommunicationMethod')}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                      >
+                        <option value="email">Email</option>
+                        <option value="phone">Phone</option>
+                        <option value="video-call">Video Call</option>
+                        <option value="in-person">In Person</option>
+                        <option value="mixed">Mixed</option>
+                      </select>
+                    </div>
+
+                    {/* Save Button */}
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <HiSave className="h-4 w-4 mr-2" />
+                            Save Changes
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="text-center py-12">
+                    <HiBookOpen className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">Mentorship not available</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Only alumni can become mentors. Students can find mentors in the mentor directory.
+                    </p>
                   </div>
                 )}
               </div>

@@ -134,7 +134,123 @@ const userSchema = new mongoose.Schema({
       }
     }],
     skills: [String],
-    interests: [String]
+    interests: [String],
+    mentorship: {
+      isAvailableAsMentor: {
+        type: Boolean,
+        default: false
+      },
+      mentorBio: {
+        type: String,
+        maxlength: 500
+      },
+      mentorSpecialties: [{
+        type: String,
+        enum: ['career-guidance', 'skill-development', 'networking', 'industry-insights', 'resume-review', 'interview-prep', 'entrepreneurship', 'leadership', 'work-life-balance', 'other']
+      }],
+      mentorExperience: {
+        type: String,
+        enum: ['0-2 years', '2-5 years', '5-10 years', '10+ years'],
+        default: '2-5 years'
+      },
+      maxMentees: {
+        type: Number,
+        default: 3,
+        min: 1,
+        max: 10
+      },
+      currentMentees: {
+        type: Number,
+        default: 0
+      },
+      preferredMeetingFrequency: {
+        type: String,
+        enum: ['weekly', 'bi-weekly', 'monthly', 'as-needed'],
+        default: 'monthly'
+      },
+      preferredCommunicationMethod: {
+        type: String,
+        enum: ['email', 'phone', 'video-call', 'in-person', 'mixed'],
+        default: 'mixed'
+      },
+      mentorRating: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+      },
+      totalMentorshipSessions: {
+        type: Number,
+        default: 0
+      }
+    },
+    swap: {
+      isAvailableForSwaps: {
+        type: Boolean,
+        default: false
+      },
+      swapBio: {
+        type: String,
+        maxlength: 500
+      },
+      swapPreferences: {
+        preferredCategories: [{
+          type: String,
+          enum: ['skill', 'service', 'accommodation', 'item', 'other']
+        }],
+        maxDistance: {
+          type: Number,
+          default: 50 // in kilometers
+        },
+        preferredCommunication: {
+          type: String,
+          enum: ['email', 'phone', 'video-call', 'in-person', 'mixed'],
+          default: 'mixed'
+        }
+      },
+      swapStats: {
+        totalOffers: {
+          type: Number,
+          default: 0
+        },
+        totalRequests: {
+          type: Number,
+          default: 0
+        },
+        totalCompleted: {
+          type: Number,
+          default: 0
+        },
+        averageRating: {
+          type: Number,
+          default: 0,
+          min: 0,
+          max: 5
+        },
+        totalRatings: {
+          type: Number,
+          default: 0
+        }
+      },
+      verification: {
+        isVerified: {
+          type: Boolean,
+          default: false
+        },
+        verifiedAt: Date,
+        verificationDocuments: [{
+          type: String,
+          url: String,
+          verifiedAt: Date
+        }],
+        trustScore: {
+          type: Number,
+          default: 0,
+          min: 0,
+          max: 100
+        }
+      }
+    }
   },
   isEmailVerified: {
     type: Boolean,

@@ -14,7 +14,10 @@ import {
   HiNewspaper,
   HiChat,
   HiCurrencyDollar,
-  HiViewGrid
+  HiViewGrid,
+  HiAcademicCap,
+  HiBookOpen,
+  HiRefresh
 } from 'react-icons/hi';
 
 const Navbar = () => {
@@ -44,6 +47,8 @@ const Navbar = () => {
   const navigation = [
     { name: 'Home', href: '/', icon: HiHome },
     { name: 'Alumni', href: '/alumni', icon: HiUsers },
+    { name: 'Mentors', href: '/mentors', icon: HiAcademicCap },
+    { name: 'Swap', href: '/swap', icon: HiRefresh },
     { name: 'Events', href: '/events', icon: HiCalendar },
     { name: 'News', href: '/news', icon: HiNewspaper },
     { name: 'Donations', href: '/donations', icon: HiCurrencyDollar },
@@ -52,6 +57,7 @@ const Navbar = () => {
   const userNavigation = [
     { name: 'Profile', href: '/profile', icon: HiUser },
     { name: 'Messages', href: '/messages', icon: HiChat },
+    { name: 'My Mentorships', href: '/my-mentorships', icon: HiBookOpen },
   ];
 
   // Add role-based navigation items

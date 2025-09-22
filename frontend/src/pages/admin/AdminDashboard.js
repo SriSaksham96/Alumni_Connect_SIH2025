@@ -11,13 +11,15 @@ import {
   HiCheckCircle,
   HiXCircle,
   HiClock,
-  HiBan
+  HiBan,
+  HiAcademicCap
 } from 'react-icons/hi';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import RoleGuard from '../../components/common/RoleGuard';
 import AdminEventsManagement from '../../components/admin/AdminEventsManagement';
 import AdminNewsManagement from '../../components/admin/AdminNewsManagement';
 import AdminCampaignsManagement from '../../components/admin/AdminCampaignsManagement';
+import AdminMentorshipManagement from '../../components/admin/AdminMentorshipManagement';
 
 const AdminDashboard = () => {
   const { user, hasPermission, isSuperAdmin } = useAuth();
@@ -135,7 +137,8 @@ const AdminDashboard = () => {
               { id: 'users', name: 'Users', icon: HiUsers },
               { id: 'events', name: 'Events', icon: HiCalendar },
               { id: 'news', name: 'News', icon: HiNewspaper },
-              { id: 'donations', name: 'Donations', icon: HiCurrencyDollar }
+              { id: 'donations', name: 'Donations', icon: HiCurrencyDollar },
+              { id: 'mentorships', name: 'Mentorships', icon: HiAcademicCap }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -399,6 +402,11 @@ const AdminDashboard = () => {
         {/* Campaigns Management Tab */}
         {activeTab === 'donations' && (
           <AdminCampaignsManagement />
+        )}
+
+        {/* Mentorships Management Tab */}
+        {activeTab === 'mentorships' && (
+          <AdminMentorshipManagement />
         )}
       </div>
     </div>

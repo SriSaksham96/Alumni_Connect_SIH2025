@@ -302,7 +302,9 @@ const Events = () => {
                     
                     <div className="flex items-center text-sm text-gray-500">
                       <HiLocationMarker className="w-4 h-4 mr-2" />
-                      {event.location.venue}, {event.location.address.city}
+                      {event.location?.venue}
+                      {event.location?.address?.city ? `, ${event.location.address.city}` : ''}
+                      {event.location?.address?.state ? `, ${event.location.address.state}` : ''}
                     </div>
 
                     {event.capacity && (

@@ -27,6 +27,13 @@ import CreateNews from './pages/CreateNews';
 import Messages from './pages/Messages';
 import Donations from './pages/Donations';
 import CreateCampaign from './pages/CreateCampaign';
+import MentorDirectory from './pages/MentorDirectory';
+import MentorProfile from './pages/MentorProfile';
+import MentorshipRequest from './pages/MentorshipRequest';
+import MyMentorships from './pages/MyMentorships';
+import SwapMarketplace from './pages/SwapMarketplace';
+import CreateSwapOffer from './pages/CreateSwapOffer';
+import SwapOfferDetails from './pages/SwapOfferDetails';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import NotFound from './pages/NotFound';
 
@@ -60,6 +67,10 @@ function App() {
                 <Route path="/news" element={<News />} />
                 <Route path="/news/:id" element={<NewsDetails />} />
                 <Route path="/donations" element={<Donations />} />
+                <Route path="/mentors" element={<MentorDirectory />} />
+                <Route path="/mentors/:id" element={<MentorProfile />} />
+                <Route path="/swap" element={<SwapMarketplace />} />
+                <Route path="/swap/offers/:id" element={<SwapOfferDetails />} />
 
                 {/* Protected Routes */}
                 <Route
@@ -99,6 +110,30 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <CreateCampaign />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mentors/:id/request"
+                  element={
+                    <ProtectedRoute>
+                      <MentorshipRequest />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/my-mentorships"
+                  element={
+                    <ProtectedRoute>
+                      <MyMentorships />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/swap/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreateSwapOffer />
                     </ProtectedRoute>
                   }
                 />

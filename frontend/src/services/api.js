@@ -117,6 +117,52 @@ export const donationsAPI = {
   createCampaign: (campaignData) => api.post('/donations/campaigns', campaignData),
 };
 
+// Mentorship API
+export const mentorshipAPI = {
+  // Mentors
+  getMentors: (params) => api.get('/mentorship/mentors', { params }),
+  getMentor: (id) => api.get(`/mentorship/mentor/${id}`),
+  
+  // Requests
+  sendRequest: (requestData) => api.post('/mentorship/request', requestData),
+  getRequests: (params) => api.get('/mentorship/requests', { params }),
+  respondToRequest: (id, responseData) => api.put(`/mentorship/request/${id}/respond`, responseData),
+  
+  // Mentorships
+  getMyMentorships: (params) => api.get('/mentorship/my-mentorships', { params }),
+  completeMentorship: (id, data) => api.put(`/mentorship/${id}/complete`, data),
+  addSession: (id, sessionData) => api.post(`/mentorship/${id}/session`, sessionData),
+  
+  // Profile
+  updateMentorshipProfile: (profileData) => api.put('/mentorship/profile', profileData),
+};
+
+// Alumni Swap API
+export const swapAPI = {
+  // Offers
+  getOffers: (params) => api.get('/swap/offers', { params }),
+  getOffer: (id) => api.get(`/swap/offers/${id}`),
+  createOffer: (offerData) => api.post('/swap/offers', offerData),
+  updateOffer: (id, offerData) => api.put(`/swap/offers/${id}`, offerData),
+  deleteOffer: (id) => api.delete(`/swap/offers/${id}`),
+  
+  // Requests
+  createRequest: (requestData) => api.post('/swap/requests', requestData),
+  getRequests: (params) => api.get('/swap/requests', { params }),
+  respondToRequest: (id, responseData) => api.put(`/swap/requests/${id}/respond`, responseData),
+  addMessage: (id, messageData) => api.post(`/swap/requests/${id}/message`, messageData),
+  
+  // Recommendations
+  getRecommendations: () => api.get('/swap/recommendations'),
+  
+  // Transactions
+  getTransactions: (params) => api.get('/swap/transactions', { params }),
+  submitFeedback: (id, feedbackData) => api.post(`/swap/transactions/${id}/feedback`, feedbackData),
+  
+  // Profile
+  updateSwapProfile: (profileData) => api.put('/swap/profile', profileData),
+};
+
 // Admin API
 export const adminAPI = {
   // Events

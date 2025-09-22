@@ -50,6 +50,8 @@ app.use('/api/messages', require('./routes/messages'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/news', require('./routes/news'));
 app.use('/api/donations', require('./routes/donations'));
+app.use('/api/mentorship', require('./routes/mentorship'));
+app.use('/api/swap', require('./routes/swap'));
 app.use('/api/admin', require('./routes/admin'));
 
 // Health check endpoint
